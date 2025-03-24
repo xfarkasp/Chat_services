@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Chat App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Basic Chat App</h1>
+
+  <div id="login">
+    <h3>Login</h3>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button onclick="loginUser()">Login</button>
+    <button id="showRegister" onclick="showRegisterForm()">Don't have an account? Register</button>
+  </div>
+
+  <div id="register" style="display: none;">
+    <h3>Register</h3>
+    <input type="email" id="emailRegister" placeholder="Email" required />
+    <input type="password" id="passwordRegister" placeholder="Password" required />
+    <input type="text" id="username" placeholder="Username" required />
+    <button onclick="register()">Register</button>
+    <button id="showLogin" onclick="showLoginForm()">Already have an account? Login</button>
+  </div>
+
+  <div id="chat" style="display: none;">
+    <h3>Welcome, <span id="usernameDisplay"></span></h3>
+    
+    <div id="messages"></div>
+  
+    <input type="text" id="receiverId" placeholder="Receiver ID" />
+    <input type="text" id="messageInput" placeholder="Type a message" />
+  
+    <input type="file" id="fileInput" onchange="previewFile()" />
+  
+    <div id="filePreviewContainer" style="display: none;">
+      <img id="imagePreview" style="max-width: 200px; display: none;">
+      <video id="videoPreview" controls style="max-width: 300px; display: none;"></video>
+      <a id="filePreview" href="#" download style="display: none;">Download File</a>
+      <button onclick="clearFilePreview()">Remove File</button>
+    </div>
+  
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <div id="groupChat" style="display: none;">
+    <h3>Group Chat</h3>
+    
+    <div>
+      <h4>Create a Group</h4>
+      <input type="text" id="groupName" placeholder="Group Name" />
+      <button onclick="createGroup()">Create Group</button>
+    </div>
+  
+    <div>
+      <h4>Join a Group</h4>
+      <input type="text" id="groupIdJoin" placeholder="Group ID" />
+      <button onclick="joinGroup()">Join Group</button>
+    </div>
+  
+    <div>
+      <h4>Send Group Message</h4>
+      <input type="text" id="groupIdMessage" placeholder="Group ID" />
+      <input type="text" id="groupMessageInput" placeholder="Type a message" />
+      <button onclick="sendGroupMessage()">Send</button>
+    </div>
+  
+    <div id="groupMessages"></div>
+  </div>  
+
+  <script src="app.js"></script>
+</body>
+</html>

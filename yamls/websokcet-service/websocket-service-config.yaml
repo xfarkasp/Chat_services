@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: websocket-service-config
+data:
+  PORT: "5003"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_TTL: "999999999999999999999999999999999999"
+  KAFKA_BROKER: "redpanda.default.svc.cluster.local:9092"
+  FRONTEND_ORIGIN: "http://frontend"
+  INSTANCE_ID: "websocket-1"
