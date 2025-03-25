@@ -76,7 +76,7 @@ function showLoginForm() {
 // Retrieve message history after successful login
 async function retrieveMessageHistory(userId, token) {
   try {
-    const response = await fetch(`http://message-service:5004/messages/${userId}`, {
+    const response = await fetch(`/api/chat/messages/${userId}`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,  // Pass the token in the Authorization header
@@ -156,7 +156,7 @@ async function sendMessage() {
   }
 
   try {
-    const response = await fetch("http://localhost:5004/send-message", {
+    const response = await fetch("/api/chat/send-message", {
       method: "POST",
       body: formData,
     });

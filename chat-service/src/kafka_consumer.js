@@ -3,8 +3,8 @@ const pool = require("./db");
 
 const { Kafka } = require('kafkajs');
 const kafka = new Kafka({
-  clientId: 'chat-service',
-  brokers: ['localhost:29092'],
+  clientId: "chat-app",
+  brokers: [process.env.KAFKA_BROKER || "redpanda:9092"], // Kubernetes DNS name
 });
 
 const consumer = kafka.consumer({ groupId: 'chat-service-group' });

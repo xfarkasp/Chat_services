@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { Kafka } = require("kafkajs");
+const WebSocket = require("ws");
 const { redisClient } = require("./redis_client");
 
 const kafkaBroker = process.env.KAFKA_BROKER;

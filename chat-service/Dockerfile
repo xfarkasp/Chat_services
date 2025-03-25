@@ -12,7 +12,7 @@ RUN npm install --only=production
 COPY src ./src
 
 # Expose the port (if service runs on 3000)
-EXPOSE 3001
+EXPOSE 5004
 
 # Run the application
 CMD ["node", "src/index.js"]

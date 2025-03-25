@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config();
 const express = require("express");
 const { Pool } = require("pg");
 const { Kafka } = require("kafkajs");
@@ -18,7 +18,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:8000",
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:8000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -30,11 +30,11 @@ const redisClient = createClient();
 // Kafka Producer
 const kafka = new Kafka({
   clientId: "chat-app",
-  brokers: ["localhost:29092"],
+  brokers: [process.env.KAFKA_BROKER || "redpanda:9092"],
 });
 
 const producer = kafka.producer();
-const MULTIMEDIA_SERVICE_URL = "http://localhost:3001";
+const MULTIMEDIA_SERVICE_URL = "http://multimedia-service:3001";
 
 (async () => {
   await producer.connect();
@@ -46,7 +46,7 @@ const MULTIMEDIA_SERVICE_URL = "http://localhost:3001";
 const FormData = require("form-data");
 const stream = require("stream");
 
-app.post("/send-message", upload.single("file"), async (req, res) => {
+app.post("/api/chat/send-message", upload.single("file"), async (req, res) => {
   const { sender_id, receiver_id, content } = req.body;
 
   console.log("Received body:", req.body);
@@ -69,14 +69,14 @@ app.post("/send-message", upload.single("file"), async (req, res) => {
         contentType: req.file.mimetype,
       });
 
-      const uploadResponse = await axios.post("http://localhost:3001/upload", formData, {
+      const uploadResponse = await axios.post(`${MULTIMEDIA_SERVICE_URL}/api/media/upload`, formData, {
         headers: formData.getHeaders(),
       });
 
       const fileName = uploadResponse.data.fileName;
       console.log("Uploaded file:", fileName);
 
-      const urlResponse = await axios.get(`http://localhost:3001/generate-url/${fileName}`);
+      const urlResponse = await axios.get(`${MULTIMEDIA_SERVICE_URL}/api/media/generate-url/${fileName}`);
       mediaUrl = urlResponse.data.fileUrl;
       console.log("Generated media URL:", mediaUrl);
     }
@@ -104,7 +104,7 @@ app.post("/send-message", upload.single("file"), async (req, res) => {
 });
 
 const authenticateToken = require("./authenticateToken");
-app.get("/messages/:user_id", authenticateToken, async (req, res) => {
+app.get("/api/chat/messages/:user_id", authenticateToken, async (req, res) => {
   const user_id = parseInt(req.params.user_id, 10);
 
   if (isNaN(user_id)) {
@@ -128,7 +128,7 @@ app.get("/messages/:user_id", authenticateToken, async (req, res) => {
     for (let msg of result.rows) {
       if (msg.media_file) {
         try {
-          const response = await axios.get(`${MULTIMEDIA_SERVICE_URL}/download/${msg.media_file}`);
+          const response = await axios.get(`${MULTIMEDIA_SERVICE_URL}/api/media/download/${msg.media_file}`);
           msg.media_url = response.data.url;
         } catch (error) {
           console.error("Error fetching media URL:", error);
@@ -143,6 +143,10 @@ app.get("/messages/:user_id", authenticateToken, async (req, res) => {
   }
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 app.listen(5004, () => {
-  console.log("Message Service running on http://localhost:5004");
+  console.log("Message Service running on port 5004");
 });

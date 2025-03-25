@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multimedia-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multimedia-service
+  template:
+    metadata:
+      labels:
+        app: multimedia-service
+    spec:
+      containers:
+        - name: multimedia-service
+          image: multimedia-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: multimedia-config
+            - secretRef:
+                name: multimedia-secret
+          env:
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multimedia-service
+spec:
+  selector:
+    app: multimedia-service
+  ports:
+    - port: 3001
+      targetPort: 3001
