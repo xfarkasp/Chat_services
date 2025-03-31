@@ -10,7 +10,7 @@ function setupRoutes(app) {
   const router = express.Router();
 
   // Create a new group
-  router.post("/groups", createGroup);
+  router.post("/groups/create_group", createGroup);
 
   // Add a user to a group
   router.post("/groups/:group_id/members", addMember);

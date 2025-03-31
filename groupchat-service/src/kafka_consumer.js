@@ -1,9 +1,10 @@
-const { insertNewUser } = require("./db");
+const { Pool } = require("pg");
+const pool = require("./db");
 
-const { Kafka } = require("kafkajs");
+const { Kafka } = require('kafkajs');
 const kafka = new Kafka({
-  clientId: "group-chat-service",
-  brokers: ["localhost:29092"], // Ensure this matches your Kafka setup
+  clientId: "chat-app",
+  brokers: [process.env.KAFKA_BROKER || "redpanda:9092"], // Kubernetes DNS name
 });
 
 const consumer = kafka.consumer({ groupId: "group-chat-service-group" });
@@ -16,7 +17,7 @@ async function startKafkaGroupConsumer() {
       eachMessage: async ({ topic, partition, message }) => {
         const user = JSON.parse(message.value.toString());
         console.log('New user registered:', user);
-        await insertNewUser(user.id, user.email, user.username);      
+        await pool.insertNewUser(user.id, user.email, user.username);      
       },
     });
   }

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: groupchat-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: groupchat-service
+  template:
+    metadata:
+      labels:
+        app: groupchat-service
+    spec:
+      containers:
+        - name: groupchat-service
+          image: groupchat-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5005
+          envFrom:
+            - configMapRef:
+                name: groupchat-service-config
+            - secretRef:
+                name: groupchat-service-secret
+          # livenessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: 5005
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: groupchat-service
+spec:
+  selector:
+    app: groupchat-service
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
+  type: ClusterIP

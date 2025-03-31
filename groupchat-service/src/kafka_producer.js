@@ -1,8 +1,9 @@
 const { Kafka } = require("kafkajs");
 
+// Kafka Producer
 const kafka = new Kafka({
-  clientId: "group-chat-service",
-  brokers: ["localhost:29092"],
+  clientId: "chat-app",
+  brokers: [process.env.KAFKA_BROKER || "redpanda:9092"],
 });
 
 const producer = kafka.producer();

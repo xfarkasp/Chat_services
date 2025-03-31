@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: groupchat-service-config
+data:
+  PORT: "5005"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_USER: "chatapp"
+  DB_NAME: "groupchatdb"
+  KAFKA_BROKER: "redpanda.default.svc.cluster.local:9092"
+  FRONTEND_ORIGIN: "http://frontend"
