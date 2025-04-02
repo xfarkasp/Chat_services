@@ -24,6 +24,8 @@ async function loginUser() {
       // Open WebSocket connection after successful login
       connectWebSocket(data.user.id, data.token);
 
+      await requestNotificationPermission();
+
       // Fetch the user's message history after login
       await retrieveMessageHistory(user.id, data.token);
     } else {
@@ -41,7 +43,7 @@ async function register() {
   const username = document.getElementById("username").value;
 
   try {
-    const response = await fetch("http://user-service:5002/users/register", {
+    const response = await fetch("/api/users/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, username }),
@@ -58,6 +60,16 @@ async function register() {
     }
   } catch (error) {
     console.error("Registration error:", error);
+  }
+}
+
+async function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission !== "granted") {
+    try {
+      await Notification.requestPermission();
+    } catch (err) {
+      console.error("Notification permission error:", err);
+    }
   }
 }
 
@@ -107,6 +119,12 @@ function connectWebSocket(userId, token) {
     ws.send(JSON.stringify({ type: "register", user_id: userId, token }));
   };
 
+  function showBrowserNotification(title, body) {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body });
+    }
+  }
+
   ws.onmessage = (event) => {
     const messageData = JSON.parse(event.data);
     console.log("WebSocket received message:", messageData);
@@ -116,6 +134,20 @@ function connectWebSocket(userId, token) {
       displayMessage(messageData.sender_id, messageData.content, "incoming", messageData.media_url);
     } else if (messageData.type === "group-message") {
       displayGroupMessage(messageData.sender_id, messageData.content, "incoming", messageData.media_url);
+    } else  if (data.type === "undelivered") {
+      data.messages.forEach((msg) => {
+        showBrowserNotification("Missed Message", msg.content);
+      });
+    }
+
+    if (Notification.permission === "granted") {
+      const notification = new Notification("New message", {
+        body: messageData.content,
+      });
+  
+      notification.onclick = () => {
+        window.focus();
+      };
     }
   };
 
@@ -235,7 +267,7 @@ async function createGroup() {
   }
 
   try {
-    const response = await fetch("http://localhost:5005/api/groups", {
+    const response = await fetch("/api/groups/create_group", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: groupName, owner_id: user.id }),
@@ -262,7 +294,7 @@ async function joinGroup() {
   }
 
   try {
-    const response = await fetch(`http://group-chat-service:5005/api/groups/${groupId}/members`, {
+    const response = await fetch(`/api/groups/${groupId}/members`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: user.id, group_id: groupId }),
@@ -290,7 +322,7 @@ async function sendGroupMessage() {
   }
 
   try {
-    await fetch(`http://group-chat-service:5005/api/groups/${groupId}/messages`, {
+    await fetch(`/api/groups/${groupId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sender_id: user.id, content }),

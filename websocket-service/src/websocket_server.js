@@ -30,7 +30,7 @@ const startWebSocketServer = () => {
     ws.on("pong", heartbeat);
     const pingInterval = setInterval(() => {
       if (ws.isAlive === false) {
-        console.log(`Terminating inactive connection for user ${this.user_id}`);
+        //console.log(`Terminating inactive connection for user ${this.user_id}`);
         return ws.terminate();
       }
   
@@ -57,6 +57,20 @@ const startWebSocketServer = () => {
         console.log(`User ${data.user_id} registered`);
 
         ws.send(JSON.stringify({ message: `User ${data.user_id} registered.` }));
+
+        const undeliveredKey = `undelivered:${data.user_id}`;
+        const pending = await redisClient.lRange(undeliveredKey, 0, -1);
+
+        if (pending.length > 0) {
+          console.log(`Found ${pending.length} undelivered messages for user ${data.user_id}. Sending now...`);
+          
+          for (const raw of pending) {
+            const msg = JSON.parse(raw);
+            ws.send(JSON.stringify(msg));
+          }
+
+        await redisClient.del(undeliveredKey); // Clear them after sending
+        }
       }
     });
 

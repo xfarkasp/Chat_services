@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { Kafka } = require("kafkajs");
+const { publishUndeliveredNotification } = require("./kafka_producer");
 const WebSocket = require("ws");
 const { redisClient } = require("./redis_client");
 
@@ -42,7 +43,9 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
       } else if (receiverInstance) {
         console.log(`User ${receiver_id} connected to instance ${receiverInstance}`);
       } else {
+
         console.log(`User ${receiver_id} is offline`);
+        await publishUndeliveredNotification(receiver_id, { receiver_id, content });
       }
     },
   });

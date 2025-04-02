@@ -1,5 +1,5 @@
 const express = require("express");
-const { connectKafka, publishUserCreatedEvent } = require("./publisher");
+const { connectKafka, publishUserCreatedEvent, producer } = require("./publisher");
 
 const {
   registerUser,
@@ -16,7 +16,7 @@ const router = express.Router();
 })();
 
 // Register a new user
-router.post("/register", async (req, res) => {
+router.post("/api/users/register", async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: "Username, email, and password are required" });
@@ -56,7 +56,7 @@ router.post("/api/users/login", async (req, res) => {
 });
 
 // Set user offline
-router.post("/offline", async (req, res) => {
+router.post("/api/users/offline", async (req, res) => {
   const { user_id } = req.body;
   try {
     await setUserOffline(user_id);
@@ -67,7 +67,7 @@ router.post("/offline", async (req, res) => {
 });
 
 // Check user status
-router.get("/status/:user_id", async (req, res) => {
+router.get("/api/users/status/:user_id", async (req, res) => {
   const userId = req.params.user_id;
   try {
     const status = await getUserStatus(userId);
