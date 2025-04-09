@@ -4,6 +4,7 @@ const multer = require("multer");
 const fs = require("fs");
 const cors = require("cors");
 const express = require("express");
+const path = require("path");
 const { connectRedis, disconnectRedis } = require("./config/redis_client");
 const { startWebSocketServer, localConnections } = require("./web_socket/websocket");
 
@@ -19,8 +20,6 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-
 // Serve static files from frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
@@ -35,7 +34,8 @@ app.get("/", (req, res) => {
 
         // Use routes
         app.use("/api", userRoutes);
-        app.use("/api", messageRoutes);      
+        app.use("/api", chatRoutes); 
+        app.use("/", healthRoutes);        
     
         // Start WebSocket Server
         startWebSocketServer();
