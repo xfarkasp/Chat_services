@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redpanda
+  namespace: chat-services
 spec:
   replicas: 1
   selector:
@@ -13,27 +14,27 @@ spec:
         app: redpanda
     spec:
       containers:
-      - name: redpanda
-        image: redpandadata/redpanda:latest
-        ports:
-        - containerPort: 9092
-        args:
-          - redpanda
-          - start
-          - --overprovisioned
-          - --smp
-          - "1"
-          - --memory
-          - 1G
-          - --reserve-memory
-          - 0M
-          - --node-id
-          - "0"
-          - --check=false
-          - --kafka-addr
-          - PLAINTEXT://0.0.0.0:9092
-          - --advertise-kafka-addr
-          - PLAINTEXT://redpanda.default.svc.cluster.local:9092
+        - name: redpanda
+          image: redpandadata/redpanda:latest
+          ports:
+            - containerPort: 9092
+          args:
+            - redpanda
+            - start
+            - --overprovisioned
+            - --smp
+            - "1"
+            - --memory
+            - 1G
+            - --reserve-memory
+            - 0M
+            - --node-id
+            - "0"
+            - --check=false
+            - --kafka-addr
+            - PLAINTEXT://0.0.0.0:9092
+            - --advertise-kafka-addr
+            - PLAINTEXT://redpanda.default.svc.cluster.local:9092
 ---
 apiVersion: v1
 kind: Service

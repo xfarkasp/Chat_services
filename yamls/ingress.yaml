@@ -3,6 +3,10 @@ kind: Ingress
 metadata:
   name: chat-ingress
 spec:
+  tls:
+    - hosts:
+        - frontend
+      secretName: frontend-tls
   rules:
     - host: frontend
       http:
@@ -30,7 +34,7 @@ spec:
                 name: websocket-service
                 port:
                   number: 5003
-                  
+
           - path: /api/chat
             pathType: Prefix
             backend:

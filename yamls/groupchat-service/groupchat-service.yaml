@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: groupchat-service
+  namespace: chat-services
 spec:
   replicas: 1
   selector:
@@ -14,8 +15,8 @@ spec:
     spec:
       containers:
         - name: groupchat-service
-          image: groupchat-service:latest
-          imagePullPolicy: Never
+          image: xfarkasp/groupchat-service:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5005
           envFrom:

@@ -4,7 +4,7 @@ metadata:
   name: multimedia-config
 data:
   PORT: "3001"
-  MINIO_ENDPOINT: "minio.default.svc.cluster.local"
+  MINIO_ENDPOINT: "minio.chat-services.svc.cluster.local"
   MINIO_PORT: "9000"
   MINIO_USE_SSL: "true"
   MINIO_ENDPOINT: "minio.minikube"

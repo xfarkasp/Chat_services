@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: websocket-service
+  namespace: chat-services
 spec:
   replicas: 1
   selector:
@@ -14,8 +15,8 @@ spec:
     spec:
       containers:
         - name: websocket-service
-          image: websocket-service:latest
-          imagePullPolicy: Never
+          image: xfarkasp/websocket-service:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5003
           envFrom:

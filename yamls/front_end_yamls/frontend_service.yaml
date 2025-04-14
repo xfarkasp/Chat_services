@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: chat-services
 spec:
   replicas: 1
   selector:
@@ -14,8 +15,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: frontend:latest
-          imagePullPolicy: Never
+          image: xfarkasp/frontend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
 ---

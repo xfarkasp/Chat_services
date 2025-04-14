@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chat-service
+  namespace: chat-services
 spec:
   replicas: 1
   selector:
@@ -14,8 +15,8 @@ spec:
     spec:
       containers:
         - name: chat-service
-          image: chat-service:latest
-          imagePullPolicy: Never
+          image: xfarkasp/chat-service:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5004
           envFrom:

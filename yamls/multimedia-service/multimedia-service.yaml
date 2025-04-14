@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: multimedia-service
+  namespace: chat-services
 spec:
   replicas: 1
   selector:
@@ -14,8 +15,8 @@ spec:
     spec:
       containers:
         - name: multimedia-service
-          image: multimedia-service:latest
-          imagePullPolicy: Never
+          image: xfarkasp/media-service:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
           envFrom:

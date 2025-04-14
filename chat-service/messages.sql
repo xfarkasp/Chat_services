@@ -4,10 +4,6 @@ CREATE TABLE users (
   password VARCHAR(100) NOT NULL
 );
 
-INSERT INTO users (username, password) VALUES
-('alice', 'password123'),
-('bob', 'securepass');
-
 CREATE TABLE messages (
   id SERIAL PRIMARY KEY,
   sender_id INT REFERENCES users(id),
@@ -15,4 +11,3 @@ CREATE TABLE messages (
   content TEXT NOT NULL,
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-

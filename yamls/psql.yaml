@@ -2,6 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
+  namespace: chat-services
 spec:
   accessModes:
     - ReadWriteOnce
@@ -24,24 +25,24 @@ spec:
         app: postgres
     spec:
       containers:
-      - name: postgres
-        image: postgres:15
-        env:
-        - name: POSTGRES_USER
-          value: "chatapp"
-        - name: POSTGRES_PASSWORD
-          value: "9544260"
-        - name: POSTGRES_DB
-          value: "chatappdb"
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - mountPath: "/var/lib/postgresql/data"
-          name: postgres-storage
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_USER
+              value: "chatapp"
+            - name: POSTGRES_PASSWORD
+              value: "9544260"
+            - name: POSTGRES_DB
+              value: "chatappdb"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: "/var/lib/postgresql/data"
+              name: postgres-storage
       volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: postgres-pvc
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
 ---
 apiVersion: v1
 kind: Service

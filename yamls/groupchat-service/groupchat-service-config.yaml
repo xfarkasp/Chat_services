@@ -8,5 +8,5 @@ data:
   DB_PORT: "5432"
   DB_USER: "chatapp"
   DB_NAME: "groupchatdb"
-  KAFKA_BROKER: "redpanda.default.svc.cluster.local:9092"
+  KAFKA_BROKER: "redpanda.chat-services.svc.cluster.local:9092"
   FRONTEND_ORIGIN: "http://frontend"
