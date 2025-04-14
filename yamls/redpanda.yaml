@@ -34,7 +34,7 @@ spec:
             - --kafka-addr
             - PLAINTEXT://0.0.0.0:9092
             - --advertise-kafka-addr
-            - PLAINTEXT://redpanda.default.svc.cluster.local:9092
+            - PLAINTEXT://redpanda.chat-services.svc.cluster.local:9092
 ---
 apiVersion: v1
 kind: Service
