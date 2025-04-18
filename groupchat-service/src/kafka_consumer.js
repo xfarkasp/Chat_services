@@ -9,6 +9,8 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: "group-chat-service-group" });
 
+//-------------------------------------------------------------------------------------------------------------
+
 async function startKafkaGroupConsumer() {
     await consumer.connect();
     await consumer.subscribe({ topic: 'user-created', fromBeginning: true });
@@ -20,6 +22,8 @@ async function startKafkaGroupConsumer() {
         await pool.insertNewUser(user.id, user.email, user.username);      
       },
     });
-  }
+}
+
+//-------------------------------------------------------------------------------------------------------------
 
 module.exports = { startKafkaGroupConsumer };

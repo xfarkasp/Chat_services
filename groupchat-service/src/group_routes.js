@@ -6,7 +6,15 @@ const {
   getMessages,
 } = require("./group_controller");
 
+//-------------------------------------------------------------------------------------------------------------
+
 function setupRoutes(app) {
+
+  // Health route for the kluster
+  app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+  });
+
   const router = express.Router();
 
   // Create a new group
@@ -24,5 +32,7 @@ function setupRoutes(app) {
   // Attach router to the main app
   app.use("/api", router);
 }
+
+//-------------------------------------------------------------------------------------------------------------
 
 module.exports = { setupRoutes };

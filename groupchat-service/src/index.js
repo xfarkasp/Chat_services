@@ -1,9 +1,9 @@
 require("dotenv").config();
-const { startKafkaGroupConsumer } = require("./kafka_consumer");
-const { producer } = require("./kafka_producer"); // Kafka producer
-const { setupRoutes } = require("./group_routes");
-const express = require("express");
 const cors = require("cors");
+const express = require("express");
+const { setupRoutes } = require("./group_routes");
+const { startKafkaGroupConsumer } = require("./kafka_consumer");
+const { producer } = require("./kafka_producer");
 
 const app = express();
 app.use(express.json());
@@ -17,6 +17,8 @@ app.use(
 
 // Setup API routes
 setupRoutes(app);
+
+//-------------------------------------------------------------------------------------------------------------
 
 (async () => {
   try {
@@ -42,3 +44,5 @@ setupRoutes(app);
     console.error("Error starting Group Chat Service:", error);
   }
 })();
+
+//-------------------------------------------------------------------------------------------------------------

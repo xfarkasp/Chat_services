@@ -1,5 +1,7 @@
 const { insertGroup, insertMember, insertMessage, fetchMessages, fetchMembers } = require("./db");
-const { producer } = require("./kafka_producer"); // Kafka producer
+const { producer } = require("./kafka_producer");
+
+//-------------------------------------------------------------------------------------------------------------
 
 async function createGroup(req, res) {
   try {
@@ -16,7 +18,7 @@ async function createGroup(req, res) {
   }
 }
 
-const { v4: uuidv4, validate: validateUUID } = require("uuid");
+//-------------------------------------------------------------------------------------------------------------
 
 async function addMember(req, res) {
   try {
@@ -33,6 +35,8 @@ async function addMember(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+//-------------------------------------------------------------------------------------------------------------
 
 async function sendMessage(req, res) {
   try {
@@ -76,6 +80,7 @@ async function sendMessage(req, res) {
   }
 }
 
+//-------------------------------------------------------------------------------------------------------------
 
 async function getMessages(req, res) {
   try {
@@ -86,5 +91,7 @@ async function getMessages(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+//-------------------------------------------------------------------------------------------------------------
 
 module.exports = { createGroup, addMember, sendMessage, getMessages };
