@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
-const {registerNewUser, findUserInDb} = require("./db")
-const { redisClient } = require("./redis_client");
 const { generateToken } = require("./auth");
+const {registerNewUser, findUserInDb} = require("./db")
 
 //-------------------------------------------------------------------------------------------------------------
 
