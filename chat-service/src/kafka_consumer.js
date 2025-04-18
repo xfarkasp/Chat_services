@@ -1,13 +1,14 @@
-const { Pool } = require("pg");
 const pool = require("./db");
-
 const { Kafka } = require('kafkajs');
+
 const kafka = new Kafka({
   clientId: "chat-app",
   brokers: [process.env.KAFKA_BROKER || "redpanda:9092"], // Kubernetes DNS name
 });
 
 const consumer = kafka.consumer({ groupId: 'chat-service-group' });
+
+//-------------------------------------------------------------------------------------------------------------
 
 async function startKafkaConsumer() {
   await consumer.connect();
@@ -26,3 +27,5 @@ async function startKafkaConsumer() {
   });
 }
 module.exports = { startKafkaConsumer };
+
+//-------------------------------------------------------------------------------------------------------------
