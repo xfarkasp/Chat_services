@@ -1,9 +1,9 @@
 require("dotenv").config();
 const cors = require("cors");
-  
 const express = require("express");
+const { connectKafkaProducer} = require("./kafka_publisher");
 const { connectRedis } = require("./redis_client");
-const userRoutes = require("./user_routes");
+const {setupRoutes} = require("./user_routes");
 
 const app = express();
 app.use(express.json());
@@ -13,18 +13,34 @@ app.use(cors({
   credentials: true
 }));
 
-// Connect to Redis
-connectRedis();
+// Setup API routes
+setupRoutes(app);
 
-// Use routes
-app.use("/", userRoutes);
+//-------------------------------------------------------------------------------------------------------------
 
-// Start the server
-const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => {
-  console.log(`User Service running on http://localhost:${PORT}`);
-});
+(async () => {
+  try {
+    // Connect kafka producer
+    connectKafkaProducer();
+    // Connect to Redis
+    connectRedis();
 
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
-});
+    // Start Express Server
+    const PORT = process.env.PORT || 5002;
+    app.listen(PORT, () => {
+      console.log(`User Service running on port ${PORT}`);
+    });
+
+    // Graceful shutdown
+    process.on("SIGINT", async () => {
+      console.log("Shutting down...");
+      process.exit(0);
+    });
+
+  } catch (error){
+    console.error("Error starting Chat Service: ", error);
+  }
+  
+})();
+
+//-------------------------------------------------------------------------------------------------------------

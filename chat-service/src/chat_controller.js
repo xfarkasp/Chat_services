@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const stream = require('stream');
-const FormData = require('form-data');
 const axios = require('axios');
+const FormData = require('form-data');
+const stream = require('stream');
+const pool = require("./db");
 
 //-------------------------------------------------------------------------------------------------------------
 

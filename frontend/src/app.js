@@ -134,8 +134,8 @@ function connectWebSocket(userId, token) {
       displayMessage(messageData.sender_id, messageData.content, "incoming", messageData.media_url);
     } else if (messageData.type === "group-message") {
       displayGroupMessage(messageData.sender_id, messageData.content, "incoming", messageData.media_url);
-    } else  if (data.type === "undelivered") {
-      data.messages.forEach((msg) => {
+    } else  if (messageData.type === "undelivered") {
+      messageData.messages.forEach((msg) => {
         showBrowserNotification("Missed Message", msg.content);
       });
     }

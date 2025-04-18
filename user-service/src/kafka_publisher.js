@@ -10,7 +10,7 @@ const producer = kafka.producer();
 let isProducerConnected = false;
 
 // Function to connect Kafka producer
-async function connectKafka() {
+async function connectKafkaProducer() {
   if (!isProducerConnected) {
     await producer.connect();
     isProducerConnected = true;
@@ -42,4 +42,4 @@ async function publishUserCreatedEvent(user) {
 }
 
 // Export the producer and functions
-module.exports = { connectKafka, publishUserCreatedEvent, producer };
+module.exports = { connectKafkaProducer, publishUserCreatedEvent };

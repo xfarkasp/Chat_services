@@ -11,4 +11,28 @@ const pool = new Pool({
 
 pool.on("connect", () => console.log("Connected to PostgreSQL Database"));
 
-module.exports = pool;
+//-------------------------------------------------------------------------------------------------------------
+
+async function insertNewUserInDb(username, email, password) {
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const result = await pool.query(
+    "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
+    [username, email, hashedPassword]
+  );
+  return result.rows[0];
+} 
+
+//-------------------------------------------------------------------------------------------------------------
+
+async function findUserInDb(email) {
+  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  return result.rows[0];
+} 
+
+//-------------------------------------------------------------------------------------------------------------
+
+module.exports = { 
+  insertNewUserInDb, 
+  findUserInDb,
+  pool 
+};
