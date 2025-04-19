@@ -16,8 +16,11 @@ const { startWebSocketServer, localConnections } = require("./websocket_server")
     await startGroupMessageConsumer(localConnections);
 
     // Graceful shutdown
-    process.on("SIGINT", async () => {
-      await disconnectRedis(localConnections);
+    process.on("SIGTERM", async () => {
+      console.log("SIGTERM: shutting down gracefully...");
+    
+      await kafkaConsumer.disconnect();
+      process.exit(0);
     });
 
   } catch (error) {

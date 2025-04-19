@@ -9,4 +9,3 @@ data:
   REDIS_TTL: "999999999999999999999999999999999999"
   KAFKA_BROKER: "redpanda.chat-services.svc.cluster.local:9092"
   FRONTEND_ORIGIN: "http://frontend"
-  INSTANCE_ID: "websocket-1"

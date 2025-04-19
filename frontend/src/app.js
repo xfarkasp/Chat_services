@@ -1,5 +1,7 @@
 let user = null;
 let ws = null;
+let shouldReconnect = true;
+let reconnectTimeout;
 
 // Login function
 async function loginUser() {
@@ -152,7 +154,18 @@ function connectWebSocket(userId, token) {
   };
 
   ws.onclose = () => {
-    console.log("WebSocket connection closed");
+    console.warn("WebSocket connection closed. Reconnecting in 1s...");
+
+    if (!reconnectTimeout) {
+      reconnectTimeout = setTimeout(() => {
+        reconnectTimeout = null;
+        connectWebSocket(userId, token);
+      }, 1000);
+    }
+  };
+
+  ws.onerror = (err) => {
+    console.error("WebSocket error:", err.message);
   };
 }
 

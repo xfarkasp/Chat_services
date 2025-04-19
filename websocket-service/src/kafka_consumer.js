@@ -4,6 +4,8 @@ const { publishUndeliveredNotification } = require("./kafka_producer");
 const WebSocket = require("ws");
 const { redisClient } = require("./redis_client");
 
+const instanceId = process.env.INSTANCE_ID || Math.random().toString(36).slice(2);
+
 const kafkaBroker = process.env.KAFKA_BROKER;
 if (!kafkaBroker) {
   throw new Error("KAFKA_BROKER environment variable is missing!");
@@ -12,12 +14,14 @@ if (!kafkaBroker) {
 console.log("Kafka Broker being used:", kafkaBroker);
 
 const kafka = new Kafka({
-  clientId: "chat-app",
-  brokers: [process.env.KAFKA_BROKER || "redpanda:9092"], // Kubernetes DNS name
+  clientId: `websocket-${instanceId}`,
+  brokers: [process.env.KAFKA_BROKER || "redpanda:9092"],
 });
 
-const consumer = kafka.consumer({ groupId: "chat-users" });
-const groupConsumer = kafka.consumer({ groupId: "group-message-consumer" });
+const consumer = kafka.consumer({ groupId: `ws-group-${instanceId}` });
+const groupConsumer = kafka.consumer({ groupId: `ws-group-group-${instanceId}` });
+
+//-------------------------------------------------------------------------------------------------------------
 
 const startKafkaDirectMessageConsumer = async (localConnections) => {
   await consumer.connect();
@@ -25,31 +29,22 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
   await consumer.subscribe({ topic: "chat-messages", fromBeginning: false });
 
   await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      const { sender_id, receiver_id, content, media_url } = JSON.parse(message.value);
-      console.log(`Received message from ${sender_id} for ${receiver_id}: ${content}, Media URL: ${media_url}`);
-
-      const receiverInstance = await redisClient.get(`user:${receiver_id}`);
-
-      if (receiverInstance === process.env.INSTANCE_ID || receiverInstance === "default-instance") {
-        const client = localConnections.get(receiver_id);
-
-        if (client && client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({ sender_id, content, media_url }));
-          console.log(`Message delivered to user ${receiver_id}`);
-        } else {
-          console.log(`User ${receiver_id} is offline on this instance.`);
-        }
-      } else if (receiverInstance) {
-        console.log(`User ${receiver_id} connected to instance ${receiverInstance}`);
+    eachMessage: async ({ topic, message }) => {
+      const { receiver_id, sender_id, content, media_url } = JSON.parse(message.value);
+  
+      const client = localConnections.get(receiver_id);
+      if (client && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ sender_id, content, media_url }));
+        console.log(`Delivered message from ${sender_id} to ${receiver_id}`);
       } else {
-
-        console.log(`User ${receiver_id} is offline`);
-        await publishUndeliveredNotification(receiver_id, { receiver_id, content });
+        console.log(`User ${receiver_id} not connected on this instance — skipping.`);
       }
-    },
+    }
   });
+  
 };
+
+//-------------------------------------------------------------------------------------------------------------
 
 async function startGroupMessageConsumer(clients) {
   await groupConsumer.connect();
@@ -87,5 +82,7 @@ async function startGroupMessageConsumer(clients) {
     },
   });
 }
+
+//-------------------------------------------------------------------------------------------------------------
 
 module.exports = { startKafkaDirectMessageConsumer,  startGroupMessageConsumer };
