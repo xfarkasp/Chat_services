@@ -15,10 +15,15 @@ spec:
       containers:
         - name: notification-service
           image: xfarkasp/notification-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: notification-service-config
+          resources:
+            requests:
+              cpu: "200m"
+            limits:
+              cpu: "500m"
 
 ---
 apiVersion: v1

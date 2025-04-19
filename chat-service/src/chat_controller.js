@@ -1,7 +1,11 @@
+require("dotenv").config();
 const axios = require('axios');
 const FormData = require('form-data');
 const stream = require('stream');
 const pool = require("./db");
+const { producer } = require("./kafka_producer");
+
+const multimedia_service_url = process.env.MULTIMEDIA_SERVICE_URL || "http://multimedia-service:3001";
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -28,14 +32,14 @@ async function sendMessage(req, res) {
           contentType: req.file.mimetype,
         });
   
-        const uploadResponse = await axios.post(`${MULTIMEDIA_SERVICE_URL}/api/media/upload`, formData, {
+        const uploadResponse = await axios.post(`${multimedia_service_url}/api/media/upload`, formData, {
           headers: formData.getHeaders(),
         });
   
         const fileName = uploadResponse.data.fileName;
         console.log("Uploaded file:", fileName);
   
-        const urlResponse = await axios.get(`${MULTIMEDIA_SERVICE_URL}/api/media/generate-url/${fileName}`);
+        const urlResponse = await axios.get(`${multimedia_service_url}/api/media/generate-url/${fileName}`);
         mediaUrl = urlResponse.data.fileUrl;
         console.log("Generated media URL:", mediaUrl);
       }
@@ -88,7 +92,7 @@ async function getMessageHistory(req, res) {
         for (let msg of result.rows) {
         if (msg.media_file) {
             try {
-            const response = await axios.get(`${MULTIMEDIA_SERVICE_URL}/api/media/download/${msg.media_file}`);
+            const response = await axios.get(`${multimedia_service_url}/api/media/download/${msg.media_file}`);
             msg.media_url = response.data.url;
             } catch (error) {
             console.error("Error fetching media URL:", error);

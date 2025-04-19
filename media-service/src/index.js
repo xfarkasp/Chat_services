@@ -4,13 +4,6 @@ const { createBucket } = require("./minio_client");
 const { setupRoutes } = require("./media_routes");
 
 const app = express();
-const port = process.env.PORT || 3001;
-
-
-// Start Server
-app.listen(port, () => {
-    console.log(`Multimedia Service running on port ${port}`);
-});
 
 // Setup API routes
 setupRoutes(app);
@@ -25,7 +18,7 @@ setupRoutes(app);
 
     // Start Express Server
     const port = process.env.PORT || 3001;
-    app.listen(PORT, () => console.log(`Multi Media Service running on port ${PORT}`));
+    app.listen(port, () => console.log(`Multi Media Service running on port ${PORT}`));
 
     // Graceful shutdown
     process.on("SIGINT", async () => {

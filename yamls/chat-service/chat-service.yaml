@@ -16,7 +16,7 @@ spec:
       containers:
         - name: chat-service
           image: xfarkasp/chat-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 5004
           envFrom:
@@ -30,6 +30,11 @@ spec:
               port: 5004
             initialDelaySeconds: 5
             periodSeconds: 10
+          resources:
+            requests:
+              cpu: "200m"
+            limits:
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service

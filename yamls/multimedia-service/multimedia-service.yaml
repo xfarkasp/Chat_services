@@ -16,7 +16,7 @@ spec:
       containers:
         - name: multimedia-service
           image: xfarkasp/media-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 3001
           envFrom:
@@ -27,6 +27,11 @@ spec:
           env:
             - name: NODE_TLS_REJECT_UNAUTHORIZED
               value: "0"
+          resources:
+            requests:
+              cpu: "200m"
+            limits:
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service

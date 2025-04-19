@@ -16,7 +16,7 @@ spec:
       containers:
         - name: groupchat-service
           image: xfarkasp/groupchat-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 5005
           envFrom:
@@ -24,12 +24,17 @@ spec:
                 name: groupchat-service-config
             - secretRef:
                 name: groupchat-service-secret
-          # livenessProbe:
-          #   httpGet:
-          #     path: /health
-          #     port: 5005
-          #   initialDelaySeconds: 5
-          #   periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5005
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "200m"
+            limits:
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service

@@ -10,3 +10,4 @@ data:
   DB_NAME: "chatdb"
   KAFKA_BROKER: "redpanda.chat-services.svc.cluster.local:9092"
   FRONTEND_ORIGIN: "http://frontend"
+  MULTIMEDIA_SERVICE_URL: "http://multimedia-service:3001"

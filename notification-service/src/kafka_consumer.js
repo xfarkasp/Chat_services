@@ -8,6 +8,8 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: "notification-service-group" });
 
+//-------------------------------------------------------------------------------------------------------------
+
 async function startKafkaConsumer() {
   await consumer.connect();
   await consumer.subscribe({ topic: "undelivered-notifications", fromBeginning: false });
@@ -28,5 +30,7 @@ async function startKafkaConsumer() {
     },
   });
 }
+
+//-------------------------------------------------------------------------------------------------------------
 
 module.exports = { startKafkaConsumer };

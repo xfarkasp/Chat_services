@@ -16,9 +16,14 @@ spec:
       containers:
         - name: frontend
           image: xfarkasp/frontend:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              cpu: "200m"
+            limits:
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
