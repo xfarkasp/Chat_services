@@ -1,4 +1,3 @@
-require("dotenv").config();
 const axios = require('axios');
 const FormData = require('form-data');
 const stream = require('stream');
@@ -10,46 +9,41 @@ const multimedia_service_url = process.env.MULTIMEDIA_SERVICE_URL || "http://mul
 //-------------------------------------------------------------------------------------------------------------
 
 async function sendMessage(req, res) {
-    const { sender_id, receiver_id, content } = req.body;
+  const { sender_id, receiver_id, content } = req.body;
 
-    console.log("Received body:", req.body);
-    console.log("Received file:", req.file);
-  
-    if (!sender_id || !receiver_id || (!content && !req.file)) {
-      return res.status(400).json({ error: "Missing required fields." });
+  if (!sender_id || !receiver_id || (!content && !req.file)) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  let mediaUrl = null;
+
+  try {
+
+    if (req.file) {
+      const formData = new FormData();
+      const bufferStream = new stream.PassThrough();
+      bufferStream.end(req.file.buffer);
+
+      formData.append("file", bufferStream, {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+      });
+
+      const uploadResponse = await axios.post(`${multimedia_service_url}/api/media/upload`, formData, {
+        headers: formData.getHeaders(),
+      });
+
+      const fileName = uploadResponse.data.fileName;
+
+      const urlResponse = await axios.get(`${multimedia_service_url}/api/media/generate-url/${fileName}`);
+      mediaUrl = urlResponse.data.fileUrl;
     }
-  
-    let mediaUrl = null;
-  
-    try {
-      if (req.file) {
-        const formData = new FormData();
-        const bufferStream = new stream.PassThrough();
-        bufferStream.end(req.file.buffer);
-  
-        formData.append("file", bufferStream, {
-          filename: req.file.originalname,
-          contentType: req.file.mimetype,
-        });
-  
-        const uploadResponse = await axios.post(`${multimedia_service_url}/api/media/upload`, formData, {
-          headers: formData.getHeaders(),
-        });
-  
-        const fileName = uploadResponse.data.fileName;
-        console.log("Uploaded file:", fileName);
-  
-        const urlResponse = await axios.get(`${multimedia_service_url}/api/media/generate-url/${fileName}`);
-        mediaUrl = urlResponse.data.fileUrl;
-        console.log("Generated media URL:", mediaUrl);
-      }
-  
-      await pool.query(
-        "INSERT INTO messages (sender_id, receiver_id, content, media_url) VALUES ($1, $2, $3, $4)",
-        [sender_id, receiver_id, content, mediaUrl]
-      );
-  
-      await producer.send({
+
+    res.status(200).json({ message: "Message sent successfully", media_url: mediaUrl });
+
+    await Promise.all([
+      // Send message to kafak
+      producer.send({
         topic: "chat-messages",
         messages: [
           {
@@ -57,13 +51,19 @@ async function sendMessage(req, res) {
             value: JSON.stringify({ sender_id, receiver_id, content, media_url: mediaUrl }),
           },
         ],
-      });
-  
-      res.status(200).json({ message: "Message sent successfully", media_url: mediaUrl });
-    } catch (error) {
-      console.error("Error sending message:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
+      }),
+      // Save message to db
+      pool.query(
+        "INSERT INTO messages (sender_id, receiver_id, content, media_url) VALUES ($1, $2, $3, $4)",
+        [sender_id, receiver_id, content, mediaUrl]
+      ),
+    ]);
+
+    
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }
 
 //-------------------------------------------------------------------------------------------------------------

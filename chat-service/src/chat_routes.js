@@ -9,10 +9,11 @@ const upload = multer({ storage });
 //-------------------------------------------------------------------------------------------------------------
 
 function setupRoutes(app) {
+    
     // Health route for the kluster
     app.get("/health", (req, res) => {
         res.status(200).send("OK");
-      });
+    });
 
     const router = express.Router();
 

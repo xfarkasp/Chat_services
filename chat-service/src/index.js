@@ -1,4 +1,3 @@
-require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
 const { setupRoutes } = require("./chat_routes");
@@ -40,9 +39,6 @@ setupRoutes(app);
       process.exit(0);
     });
 
-    app.get("/health", (req, res) => {
-      res.status(200).send("OK");
-    });
   } catch (error){
     console.error("Error starting Chat Service: ", error);
   }

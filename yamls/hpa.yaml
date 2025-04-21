@@ -9,14 +9,14 @@ spec:
     kind: Deployment
     name: chat-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 100
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: 60
 
 ---
 # 2. HPA for user-service
@@ -52,7 +52,7 @@ spec:
     kind: Deployment
     name: websocket-service
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 1
   metrics:
     - type: Resource
       resource:

@@ -17,7 +17,7 @@ async function startKafkaConsumer() {
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
       const user = JSON.parse(message.value.toString());
-      console.log('New user registered:', user);
+      //console.log('New user registered:', user);
       
       await pool.query(
         "INSERT INTO users (id, email, username) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
