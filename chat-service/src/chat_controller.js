@@ -8,58 +8,76 @@ const multimedia_service_url = process.env.MULTIMEDIA_SERVICE_URL || "http://mul
 
 //-------------------------------------------------------------------------------------------------------------
 
-async function sendMessage(req, res) {
+async function sendMessage({ sender_id, receiver_id, content, mediaBuffer, mediaFileName, mediaMimeType }) {
+  let mediaUrl = null;
+  console.log(sender_id, receiver_id, content);
+
+  if (mediaBuffer && mediaFileName && mediaMimeType) {
+    const formData = new FormData();
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(mediaBuffer);
+
+    formData.append("file", bufferStream, {
+      filename: mediaFileName,
+      contentType: mediaMimeType,
+    });
+
+    const uploadResponse = await axios.post(`${multimedia_service_url}/api/media/upload`, formData, {
+      headers: formData.getHeaders(),
+    });
+
+    const fileName = uploadResponse.data.fileName;
+
+    const urlResponse = await axios.get(`${multimedia_service_url}/api/media/generate-url/${fileName}`);
+    mediaUrl = urlResponse.data.fileUrl;
+  }
+
+  const string_receiver_id = String(receiver_id);
+
+  await producer.send({
+    topic: "chat-messages",
+    messages: [
+      {
+        key: string_receiver_id,
+        value: JSON.stringify({
+          sender_id,
+          receiver_id: string_receiver_id,
+          content,
+          media_url: mediaUrl
+        }),
+      },
+    ],
+  });
+
+  return mediaUrl;
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
+async function sendDirectMessage(req, res) {
   const { sender_id, receiver_id, content } = req.body;
 
   if (!sender_id || !receiver_id || (!content && !req.file)) {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
-  let mediaUrl = null;
-
   try {
+    const media_url = await sendMessage({
+      sender_id,
+      receiver_id,
+      content,
+      mediaBuffer: req.file?.buffer,
+      mediaFileName: req.file?.originalname,
+      mediaMimeType: req.file?.mimetype,
+    });
 
-    if (req.file) {
-      const formData = new FormData();
-      const bufferStream = new stream.PassThrough();
-      bufferStream.end(req.file.buffer);
+    pool.query(
+      "INSERT INTO messages (sender_id, receiver_id, content, media_url) VALUES ($1, $2, $3, $4)",
+      [sender_id, receiver_id, content, media_url]
+    );
 
-      formData.append("file", bufferStream, {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-      });
+    res.status(200).json({ message: "Message sent successfully", media_url: media_url });
 
-      const uploadResponse = await axios.post(`${multimedia_service_url}/api/media/upload`, formData, {
-        headers: formData.getHeaders(),
-      });
-
-      const fileName = uploadResponse.data.fileName;
-
-      const urlResponse = await axios.get(`${multimedia_service_url}/api/media/generate-url/${fileName}`);
-      mediaUrl = urlResponse.data.fileUrl;
-    }
-
-    res.status(200).json({ message: "Message sent successfully", media_url: mediaUrl });
-
-    await Promise.all([
-      // Send message to kafak
-      producer.send({
-        topic: "chat-messages",
-        messages: [
-          {
-            key: receiver_id,
-            value: JSON.stringify({ sender_id, receiver_id, content, media_url: mediaUrl }),
-          },
-        ],
-      }),
-      // Save message to db
-      pool.query(
-        "INSERT INTO messages (sender_id, receiver_id, content, media_url) VALUES ($1, $2, $3, $4)",
-        [sender_id, receiver_id, content, mediaUrl]
-      ),
-    ]);
-
-    
   } catch (error) {
     console.error("Error sending message:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -111,6 +129,7 @@ async function getMessageHistory(req, res) {
 
 module.exports = {
     sendMessage,
+    sendDirectMessage,
     getMessageHistory
   };
   

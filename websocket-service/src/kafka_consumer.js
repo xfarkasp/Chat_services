@@ -7,7 +7,6 @@ const { redisClient } = require("./redis_client");
 const instanceId = process.env.INSTANCE_ID || Math.random().toString(36).slice(2);
 
 const consumer = kafka.consumer({ groupId: `ws-group-${instanceId}` });
-const groupConsumer = kafka.consumer({ groupId: `ws-group-group-${instanceId}` });
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -19,7 +18,9 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
   await consumer.run({
     eachMessage: async ({ topic, message }) => {
       const { receiver_id, sender_id, content, media_url } = JSON.parse(message.value);
+      console.log(typeof receiver_id);
 
+      console.log(receiver_id, sender_id, content);
       const isOnline = await redisClient.exists(`user:${receiver_id}`);
 
       if (isOnline === 0) {
@@ -38,49 +39,9 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
         console.log(`Delivered message from ${sender_id} to ${receiver_id}`);
         return;
       } 
+      console.log("not online for some fucking reason");
     }
   });
 };
 
-//-------------------------------------------------------------------------------------------------------------
-
-async function startGroupMessageConsumer(clients) {
-  await groupConsumer.connect();
-  console.log("Kafka Group Consumer connected - WebSocket Service");
-  await groupConsumer.subscribe({ topic: "group-messages", fromBeginning: false });
-
-  await groupConsumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      const { sender_id, content } = JSON.parse(message.value);
-      try {
-        const data = JSON.parse(message.value.toString());
-        //console.log("[GroupMessageConsumer] Received:", data);
-
-        if (Array.isArray(data.group_members)) {
-          //console.log("Connected users in localConnections:", [...clients.keys()]); // Debug
-          //console.log("Group Members:", data.group_members);
-
-          data.group_members.forEach((user_id) => {
-            const ws = clients.get(String(user_id));
-
-            if (ws) {
-              //console.log(`Sending message to User ${user_id}`);
-             // console.log(data);
-              ws.send(JSON.stringify({ sender_id, content }));
-            } else {
-             // console.warn(`User ${user_id} is not connected.`);
-            }
-          });
-        } else {
-          //console.warn("[GroupMessageConsumer] No group_members array in message");
-        }
-      } catch (error) {
-        //console.error("[GroupMessageConsumer] Error processing message:", error);
-      }
-    },
-  });
-}
-
-//-------------------------------------------------------------------------------------------------------------
-
-module.exports = { startKafkaDirectMessageConsumer,  startGroupMessageConsumer };
+module.exports = { startKafkaDirectMessageConsumer };

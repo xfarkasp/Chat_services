@@ -1,7 +1,7 @@
 const cors = require("cors");
 const express = require("express");
 const { setupRoutes } = require("./chat_routes");
-const { startKafkaConsumer } = require("./kafka_consumer");
+const { startKafkaUserConsumer, startGroupMessageConsumer } = require("./kafka_consumer");
 const { producer } = require("./kafka_producer");
 
 const app = express();
@@ -22,8 +22,10 @@ setupRoutes(app);
 (async () => {
   try {
     // Kafka Consumer
-    await startKafkaConsumer();
+    await startKafkaUserConsumer();
     console.log("Connected to Kafka - Chat Service");
+    await startGroupMessageConsumer();
+    console.log("Connected to Kafka - Group Chat Service");
 
     // Start Kafka Producer
     await producer.connect();

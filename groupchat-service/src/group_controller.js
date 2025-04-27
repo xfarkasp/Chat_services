@@ -57,7 +57,6 @@ async function sendMessage(req, res) {
     console.log("Fetched Group Members:", groupMembersResult);
     // Extract user IDs into an array
     const group_members = groupMembersResult.map(row => row.user_id);
-   
 
     // Publish message to Kafka with group_members included
     await producer.send({
@@ -66,7 +65,7 @@ async function sendMessage(req, res) {
         {
           key: group_id,
           value: JSON.stringify({
-            ...message,
+            message,
             group_members, // Include group members in the Kafka message
           }),
         },
