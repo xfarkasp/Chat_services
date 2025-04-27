@@ -19,17 +19,27 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
   await consumer.run({
     eachMessage: async ({ topic, message }) => {
       const { receiver_id, sender_id, content, media_url } = JSON.parse(message.value);
-  
+
+      const isOnline = await redisClient.exists(`user:${receiver_id}`);
+
+      if (isOnline === 0) {
+        console.log(`User ${receiver_id} is offline`);
+        const sender = localConnections.get(sender_id);
+        if(sender && sender.readyState === WebSocket.OPEN){
+          console.log(`Publishing undelivered notification for ${receiver_id}`);
+          await publishUndeliveredNotification(receiver_id, { receiver_id, content });
+        }
+        return;
+      }
+
       const client = localConnections.get(receiver_id);
       if (client && client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ sender_id, content, media_url }));
-        //console.log(`Delivered message from ${sender_id} to ${receiver_id}`);
-      } else {
-        //console.log(`User ${receiver_id} not connected on this instance — skipping.`);
-      }
+        console.log(`Delivered message from ${sender_id} to ${receiver_id}`);
+        return;
+      } 
     }
   });
-  
 };
 
 //-------------------------------------------------------------------------------------------------------------

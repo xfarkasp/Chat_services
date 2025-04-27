@@ -21,7 +21,7 @@ async function publishUndeliveredNotification(receiver_id, messagePayload) {
       await connectProducer();
     }
     else{
-       // console.log("Kafka producer connected (WebSocket)");
+       console.log("Kafka producer connected (WebSocket)");
     }
 
     const result = await producer.send({
@@ -34,10 +34,10 @@ async function publishUndeliveredNotification(receiver_id, messagePayload) {
       ],
     });
 
-    //console.log("Published undelivered notification result:", JSON.stringify(result, null, 2));
-    //console.log(`Published undelivered notification result: ${result}`);
+    console.log("Published undelivered notification result:", JSON.stringify(result, null, 2));
+    console.log(`Published undelivered notification result: ${result}`);
   } catch (error) {
-    //console.error("Failed to publish undelivered notification:", error);
+    console.error("Failed to publish undelivered notification:", error);
     isProducerConnected = false;
   }
 }
