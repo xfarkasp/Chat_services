@@ -36,8 +36,7 @@ const startWebSocketServer = () => {
 
         redisClient.set(
           `user:${data.user_id}`,
-          process.env.INSTANCE_ID || "default-instance",
-          { EX: 60 }
+          process.env.INSTANCE_ID || "default-instance"
         );
 
         localConnections.set(ws.user_id, ws);
