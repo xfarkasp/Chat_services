@@ -9,6 +9,8 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 let isProducerConnected = false;
 
+//-------------------------------------------------------------------------------------------------------------
+
 // Function to connect Kafka producer
 async function connectKafkaProducer() {
   if (!isProducerConnected) {
@@ -18,13 +20,15 @@ async function connectKafkaProducer() {
   }
 }
 
+//-------------------------------------------------------------------------------------------------------------
+
 // Function to publish an event
 async function publishUserCreatedEvent(user) {
   try {
     if (!isProducerConnected) {
       await connectKafka(); // Ensure producer is connected before sending
     }
-    
+
     await producer.send({
       topic: "user-created",
       messages: [
@@ -41,5 +45,6 @@ async function publishUserCreatedEvent(user) {
   }
 }
 
-// Export the producer and functions
+//-------------------------------------------------------------------------------------------------------------
+
 module.exports = { connectKafkaProducer, publishUserCreatedEvent };

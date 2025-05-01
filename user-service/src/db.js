@@ -1,12 +1,15 @@
 require("dotenv").config({ path: "../.env" });
+const bcrypt = require("bcrypt");
 const { Pool } = require("pg");
+
+const SALT_ROUNDS = 10;
 
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT || 5432
+  port: process.env.DB_PORT || 5432,
 });
 
 pool.on("connect", () => console.log("Connected to PostgreSQL Database"));
@@ -20,19 +23,21 @@ async function insertNewUserInDb(username, email, password) {
     [username, email, hashedPassword]
   );
   return result.rows[0];
-} 
+}
 
 //-------------------------------------------------------------------------------------------------------------
 
 async function findUserInDb(email) {
-  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+    email,
+  ]);
   return result.rows[0];
-} 
+}
 
 //-------------------------------------------------------------------------------------------------------------
 
-module.exports = { 
-  insertNewUserInDb, 
+module.exports = {
+  insertNewUserInDb,
   findUserInDb,
-  pool 
+  pool,
 };

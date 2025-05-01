@@ -1,17 +1,19 @@
 require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
-const { connectKafkaProducer} = require("./kafka_publisher");
+const { connectKafkaProducer } = require("./kafka_publisher");
 const { connectRedis } = require("./redis_client");
-const {setupRoutes} = require("./user_routes");
+const { setupRoutes } = require("./user_routes");
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || "http://localhost:8000",
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:8000",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 // Setup API routes
 setupRoutes(app);
@@ -36,11 +38,9 @@ setupRoutes(app);
       console.log("Shutting down...");
       process.exit(0);
     });
-
-  } catch (error){
+  } catch (error) {
     console.error("Error starting Chat Service: ", error);
   }
-  
 })();
 
 //-------------------------------------------------------------------------------------------------------------

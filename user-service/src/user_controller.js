@@ -1,20 +1,24 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("./auth");
-const {registerNewUser, findUserInDb} = require("./db")
+const { insertNewUserInDb, findUserInDb } = require("./db");
+const { publishUserCreatedEvent } = require("./kafka_publisher");
 
 //-------------------------------------------------------------------------------------------------------------
 
 // Register a new user
 async function registerUser(req, res) {
-  try{
+  try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
-      return res.status(400).json({ error: "Username, email, and password are required" });
+      return res
+        .status(400)
+        .json({ error: "Username, email, and password are required" });
     }
-    registerNewUser(username, email, password);
-
+    const newUser = await insertNewUserInDb(username, email, password);
+    console.log(newUser);
     await publishUserCreatedEvent(newUser);
-    res.status(201).json({ message: "User registered", user: newUser });
+    const token = generateToken(newUser);
+    res.status(201).json({ message: "User registered", newUser, token });
   } catch (error) {
     throw new Error("Error registering user: " + error.message);
   }
@@ -30,7 +34,7 @@ async function loginUser(req, res) {
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
-    
+
     const user = findUserInDb(email);
     if (!user) {
       throw new Error("User not found");
@@ -59,5 +63,5 @@ async function loginUser(req, res) {
 
 module.exports = {
   registerUser,
-  loginUser
+  loginUser,
 };
