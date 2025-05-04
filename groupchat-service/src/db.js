@@ -60,6 +60,7 @@ async function fetchMessages(group_id) {
         sender.username AS sender_username,
         gm.sender_id,
         gm.content,
+        gm.media_url,
         gm.created_at
       FROM group_messages gm
       JOIN users sender ON gm.sender_id = sender.id
