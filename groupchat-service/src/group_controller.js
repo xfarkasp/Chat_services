@@ -1,5 +1,18 @@
-const { insertGroup, insertMember, insertMessage, fetchMessages, fetchMembers } = require("./db");
+const axios = require("axios");
+const FormData = require("form-data");
+const stream = require("stream");
+const {
+  insertGroup,
+  insertMember,
+  insertMessage,
+  fetchMessages,
+  fetchMembers,
+  fetchAssociatedGroups,
+} = require("./db");
 const { producer } = require("./kafka_producer");
+
+const multimedia_service_url =
+  process.env.MULTIMEDIA_SERVICE_URL || "http://multimedia-service:3001";
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -7,9 +20,11 @@ async function createGroup(req, res) {
   try {
     const { name, owner_id } = req.body;
     if (!name || !owner_id) {
-      return res.status(400).json({ error: "Group name and owner ID are required" });
+      return res
+        .status(400)
+        .json({ error: "Group name and owner ID are required" });
     }
-    console.log(owner_id); 
+    console.log(owner_id);
     console.log(typeof owner_id);
     const group = await insertGroup(name, owner_id);
     res.status(201).json({ message: "Group created", group });
@@ -26,11 +41,15 @@ async function addMember(req, res) {
     let { group_id, user_id } = req.body;
 
     if (!group_id || !user_id) {
-      return res.status(400).json({ error: "Group ID and User ID are required." });
+      return res
+        .status(400)
+        .json({ error: "Group ID and User ID are required." });
     }
     await insertMember(group_id, user_id);
 
-    res.status(200).json({ message: `User added to group ${group_id}.`, user_id });
+    res
+      .status(200)
+      .json({ message: `User added to group ${group_id}.`, user_id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -42,21 +61,53 @@ async function sendMessage(req, res) {
   try {
     const { group_id } = req.params;
     const { sender_id, content } = req.body;
-
-    if (!sender_id || !content) {
-      return res.status(400).json({ error: "Sender ID and message content are required" });
+    console.log(req.body);
+    if (!sender_id || (!content && !req.file)) {
+      return res
+        .status(400)
+        .json({ error: "Sender ID and message content are required" });
     }
 
     console.log(req.params);
     console.log(req.body);
 
+    let mediaUrl = null;
+
+    if (req.file?.buffer && req.file?.originalname && req.file?.mimetype) {
+      const formData = new FormData();
+      const bufferStream = new stream.PassThrough();
+      bufferStream.end(req.file?.buffer);
+
+      formData.append("file", bufferStream, {
+        filename: req.file?.originalname,
+        contentType: req.file?.mimetype,
+      });
+
+      const uploadResponse = await axios.post(
+        `${multimedia_service_url}/api/media/upload`,
+        formData,
+        {
+          headers: formData.getHeaders(),
+        }
+      );
+
+      const fileName = uploadResponse.data.fileName;
+
+      const urlResponse = await axios.get(
+        `${multimedia_service_url}/api/media/generate-url/${fileName}`
+      );
+      mediaUrl = urlResponse.data.fileUrl;
+    }
+
     // Insert the message into the database
-    const message = await insertMessage(group_id, sender_id, content);
+    const message = await insertMessage(group_id, sender_id, content, mediaUrl);
 
     const groupMembersResult = await fetchMembers(group_id);
     console.log("Fetched Group Members:", groupMembersResult);
     // Extract user IDs into an array
-    const group_members = groupMembersResult.map(row => row.user_id);
+    const group_members = groupMembersResult
+      .map((row) => row.user_id)
+      .filter((id) => id !== Number(sender_id));
 
     // Publish message to Kafka with group_members included
     await producer.send({
@@ -65,6 +116,8 @@ async function sendMessage(req, res) {
         {
           key: group_id,
           value: JSON.stringify({
+            sender_id,
+            group_id,
             message,
             group_members, // Include group members in the Kafka message
           }),
@@ -72,7 +125,9 @@ async function sendMessage(req, res) {
       ],
     });
 
-    res.status(201).json({ message: "Message sent", data: message });
+    res
+      .status(200)
+      .json({ message: "Message sent", data: message, media_url: mediaUrl });
   } catch (error) {
     console.error("[sendMessage] Error:", error);
     res.status(500).json({ error: error.message });
@@ -93,4 +148,25 @@ async function getMessages(req, res) {
 
 //-------------------------------------------------------------------------------------------------------------
 
-module.exports = { createGroup, addMember, sendMessage, getMessages };
+async function getGroups(req, res) {
+  const currentUserId = req.user.id;
+
+  try {
+    const result = await fetchAssociatedGroups(currentUserId);
+    console.log(result);
+    res.json(result);
+  } catch (err) {
+    console.error("Database error:", err); // Add logging
+    res.status(500).json({ error: "Failed to load groups" });
+  }
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
+module.exports = {
+  createGroup,
+  addMember,
+  sendMessage,
+  getMessages,
+  getGroups,
+};

@@ -27,7 +27,7 @@ async function insertNewUserInDb(username, email, password) {
 
 //-------------------------------------------------------------------------------------------------------------
 
-async function findUserInDb(email) {
+async function findUserInDbByEmail(email) {
   const result = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
   ]);
@@ -36,8 +36,16 @@ async function findUserInDb(email) {
 
 //-------------------------------------------------------------------------------------------------------------
 
+async function findUserInDbById(id) {
+  const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+  return result.rows[0];
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
 module.exports = {
   insertNewUserInDb,
-  findUserInDb,
+  findUserInDbByEmail,
+  findUserInDbById,
   pool,
 };

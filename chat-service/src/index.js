@@ -1,5 +1,6 @@
 const cors = require("cors");
 const express = require("express");
+const pool = require("./db");
 const { setupRoutes } = require("./chat_routes");
 const { startKafkaUserConsumer, startGroupMessageConsumer } = require("./kafka_consumer");
 const { producer } = require("./kafka_producer");
@@ -21,6 +22,9 @@ setupRoutes(app);
 
 (async () => {
   try {
+    // Check if postgres is connected
+    await pool.query("SELECT 1");
+
     // Kafka Consumer
     await startKafkaUserConsumer();
     console.log("Connected to Kafka - Chat Service");

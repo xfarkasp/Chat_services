@@ -1,6 +1,10 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("./auth");
-const { insertNewUserInDb, findUserInDb } = require("./db");
+const {
+  insertNewUserInDb,
+  findUserInDbById,
+  findUserInDbByEmail,
+} = require("./db");
 const { publishUserCreatedEvent } = require("./kafka_publisher");
 
 //-------------------------------------------------------------------------------------------------------------
@@ -9,6 +13,7 @@ const { publishUserCreatedEvent } = require("./kafka_publisher");
 async function registerUser(req, res) {
   try {
     const { username, email, password } = req.body;
+    console.log(req.body);
     if (!username || !email || !password) {
       return res
         .status(400)
@@ -30,12 +35,14 @@ async function registerUser(req, res) {
 async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
-
+    console.log(req);
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = findUserInDb(email);
+    console.log("LOGIN PAYLOAD:", req.body);
+
+    const user = await findUserInDbByEmail(email);
     if (!user) {
       throw new Error("User not found");
     }
@@ -52,7 +59,7 @@ async function loginUser(req, res) {
     }
 
     const token = generateToken(user);
-    return { user, token };
+    res.status(201).json({ message: "User Logedin", user, token });
   } catch (error) {
     console.error("Login failed:", error.message);
     throw new Error("Login failed: " + error.message);
@@ -61,7 +68,43 @@ async function loginUser(req, res) {
 
 //-------------------------------------------------------------------------------------------------------------
 
+// Find user by username or id
+async function findUser(req, res) {
+  const requestedUserIdentifier = req.params.identifier;
+  console.log(requestedUserIdentifier);
+
+  if (!requestedUserIdentifier) {
+    return res.status(400).json({ error: "Username not provided." });
+  }
+
+  try {
+    let user = null;
+    if (!isNaN(requestedUserIdentifier)) {
+      user = await findUserInDbById(Number(requestedUserIdentifier));
+    } else {
+      user = await findUserInDbByEmail(requestedUserIdentifier);
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const foundUser = {
+      id: user.id,
+      username: user.username,
+    };
+
+    res.status(201).json({ message: "User found", foundUser });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ error: "Failed to fetch user." });
+  }
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
 module.exports = {
   registerUser,
   loginUser,
+  findUser,
 };

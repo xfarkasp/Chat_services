@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, loginUser } = require("./user_controller");
+const { registerUser, loginUser, findUser } = require("./user_controller");
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -11,11 +11,14 @@ function setupRoutes(app) {
 
   const router = express.Router();
 
-  // Log in user
+  // Register a user
   router.post("/users/register", registerUser);
 
-  // Get message history of a specific user
-  router.get("/users/login", loginUser);
+  // Login a user
+  router.post("/users/login", loginUser);
+
+  // Find a user
+  router.get("/users/user/:identifier", findUser);
 
   // Attach router to the main app
   app.use("/api", router);
