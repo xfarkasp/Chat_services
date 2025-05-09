@@ -7,6 +7,7 @@ const {
   sendMessage,
   getMessages,
   getGroups,
+  findGroup,
 } = require("./group_controller");
 
 const storage = multer.memoryStorage();
@@ -26,7 +27,7 @@ function setupRoutes(app) {
   router.post("/groups/create_group", createGroup);
 
   // Add a user to a group
-  router.post("/groups/:group_id/members", addMember);
+  router.post("/groups/add_member", addMember);
 
   // Send a message in a group
   router.post("/groups/:group_id/messages", upload.single("file"), sendMessage);
@@ -36,6 +37,9 @@ function setupRoutes(app) {
 
   // Get associated groups specific user
   router.get("/groups/members", authenticateToken, getGroups);
+
+  // Find a user
+  router.get("/groups/group/:identifier", findGroup);
 
   // Attach router to the main app
   app.use("/api", router);

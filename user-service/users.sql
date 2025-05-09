@@ -6,7 +6,3 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   status VARCHAR(20) DEFAULT 'offline'
 );
-
-INSERT INTO users (username, password) VALUES
-('test', 'test@test.com', "test"),
-('test1', 'test1@test.com', "test")

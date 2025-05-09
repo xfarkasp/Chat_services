@@ -8,6 +8,8 @@ const {
   fetchMessages,
   fetchMembers,
   fetchAssociatedGroups,
+  findGroupInDbById,
+  findGroupInDbByName,
 } = require("./db");
 const { producer } = require("./kafka_producer");
 
@@ -24,8 +26,6 @@ async function createGroup(req, res) {
         .status(400)
         .json({ error: "Group name and owner ID are required" });
     }
-    console.log(owner_id);
-    console.log(typeof owner_id);
     const group = await insertGroup(name, owner_id);
     res.status(201).json({ message: "Group created", group });
   } catch (error) {
@@ -37,7 +37,6 @@ async function createGroup(req, res) {
 
 async function addMember(req, res) {
   try {
-    console.log(req.body);
     let { group_id, user_id } = req.body;
 
     if (!group_id || !user_id) {
@@ -61,15 +60,11 @@ async function sendMessage(req, res) {
   try {
     const { group_id } = req.params;
     const { sender_id, content } = req.body;
-    console.log(req.body);
     if (!sender_id || (!content && !req.file)) {
       return res
         .status(400)
         .json({ error: "Sender ID and message content are required" });
     }
-
-    console.log(req.params);
-    console.log(req.body);
 
     let mediaUrl = null;
 
@@ -103,7 +98,6 @@ async function sendMessage(req, res) {
     const message = await insertMessage(group_id, sender_id, content, mediaUrl);
 
     const groupMembersResult = await fetchMembers(group_id);
-    console.log("Fetched Group Members:", groupMembersResult);
     // Extract user IDs into an array
     const group_members = groupMembersResult
       .map((row) => row.user_id)
@@ -153,11 +147,42 @@ async function getGroups(req, res) {
 
   try {
     const result = await fetchAssociatedGroups(currentUserId);
-    console.log(result);
     res.json(result);
   } catch (err) {
     console.error("Database error:", err); // Add logging
     res.status(500).json({ error: "Failed to load groups" });
+  }
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
+// Find user by username or id
+async function findGroup(req, res) {
+  const requestedGroupIdentifier = req.params.identifier;
+  if (!requestedGroupIdentifier) {
+    return res.status(400).json({ error: "Group identifier not provided." });
+  }
+
+  try {
+    let group = null;
+    if (!isNaN(requestedGroupIdentifier)) {
+      group = await findGroupInDbById(Number(requestedGroupIdentifier));
+    } else {
+      group = await findGroupInDbByName(requestedGroupIdentifier);
+    }
+
+    if (!group) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const foundGroup = {
+      id: group.id,
+      name: group.name,
+    };
+    res.status(201).json({ message: "User found", foundGroup });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ error: "Failed to fetch user." });
   }
 }
 
@@ -169,4 +194,5 @@ module.exports = {
   sendMessage,
   getMessages,
   getGroups,
+  findGroup,
 };

@@ -101,6 +101,22 @@ async function fetchAssociatedGroups(userId) {
 
 //-------------------------------------------------------------------------------------------------------------
 
+async function findGroupInDbByName(email) {
+  const result = await pool.query("SELECT * FROM groups WHERE name = $1", [
+    email,
+  ]);
+  return result.rows[0];
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
+async function findGroupInDbById(id) {
+  const result = await pool.query("SELECT * FROM groups WHERE id = $1", [id]);
+  return result.rows[0];
+}
+
+//-------------------------------------------------------------------------------------------------------------
+
 module.exports = {
   insertGroup,
   insertMember,
@@ -109,5 +125,7 @@ module.exports = {
   insertNewUser,
   fetchMembers,
   fetchAssociatedGroups,
+  findGroupInDbByName,
+  findGroupInDbById,
   pool,
 };
