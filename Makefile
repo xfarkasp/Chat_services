@@ -26,6 +26,17 @@ clean-db-job:
 # Full flow: setup DB and schema
 init-db: init-sql apply-db-job
 
+ Enable Ingress addon in Minikube
+enable-ingress:
+	@echo "Enabling Ingress addon in Minikube..."
+	minikube addons enable ingress
+
+# Enable Metrics Server for HPA
+enable-metrics:
+	@echo "Enabling Metrics Server in Minikube..."
+	minikube addons enable metrics-server
+
+# Install minIO
 install-minio:
 	@echo "Adding MinIO Helm repo..."
 	helm repo add minio https://charts.min.io/ || true
