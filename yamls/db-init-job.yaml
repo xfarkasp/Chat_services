@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init
+  namespace: chat-services
+spec:
+  template:
+    spec:
+      containers:
+        - name: db-init
+          image: postgres:15
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              echo "Waiting for PostgreSQL to be ready...";
+              until pg_isready -h postgres -U chatapp; do sleep 2; done;
+              echo "Running SQL init script...";
+              PGPASSWORD=admin psql -h postgres -U chatapp -f /sql/init.sql
+          env:
+            - name: PGPASSWORD
+              value: "admin"
+          volumeMounts:
+            - name: sql-volume
+              mountPath: /sql
+      volumes:
+        - name: sql-volume
+          configMap:
+            name: db-init-sql
+      restartPolicy: OnFailure

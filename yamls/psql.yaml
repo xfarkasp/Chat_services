@@ -31,7 +31,7 @@ spec:
             - name: POSTGRES_USER
               value: "chatapp"
             - name: POSTGRES_PASSWORD
-              value: "9544260"
+              value: "admin"
             - name: POSTGRES_DB
               value: "chatappdb"
           ports:
