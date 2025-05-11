@@ -26,7 +26,7 @@ clean-db-job:
 # Full flow: setup DB and schema
 init-db: init-sql apply-db-job
 
- Enable Ingress addon in Minikube
+# Enable Ingress addon in Minikube
 enable-ingress:
 	@echo "Enabling Ingress addon in Minikube..."
 	minikube addons enable ingress
