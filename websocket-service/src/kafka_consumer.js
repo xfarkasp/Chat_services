@@ -13,7 +13,6 @@ const consumer = kafka.consumer({ groupId: `ws-group-${instanceId}` });
 
 const startKafkaDirectMessageConsumer = async (localConnections) => {
   await consumer.connect();
-  //console.log("Kafka Direct Consumer connected - WebSocket Service");
   await consumer.subscribe({ topic: "chat-messages", fromBeginning: false });
 
   await consumer.run({
@@ -32,6 +31,7 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
           console.log(`Publishing undelivered notification for ${receiver_id}`);
           await publishUndeliveredNotification(receiver_id, {
             receiver_id,
+            sender_id,
             group_id,
             content,
           });
@@ -47,7 +47,6 @@ const startKafkaDirectMessageConsumer = async (localConnections) => {
         console.log(`Delivered message from ${sender_id} to ${receiver_id}`);
         return;
       }
-      console.log("not online for some fucking reason");
     },
   });
 };
