@@ -1,15 +1,10 @@
 .PHONY: deploy install-minio create-tls-secret init-sql apply-db-job clean-db-job init-db
 
 NAMESPACE := chat-services
-SQL_FILE := ./init.sql
+SQL_FILE := ./sql/init.sql
 POSTGRES_MANIFEST := ./yamls/postgres.yaml
 DB_JOB_FILE := ./yamls/db-init-job.yaml
 CONFIGMAP_NAME := db-init-sql
-
-# Deploy PostgreSQL from manifest
-deploy-postgres:
-	@echo "Deploying PostgreSQL..."
-	kubectl apply -f $(POSTGRES_MANIFEST) -n $(NAMESPACE)
 
 # Create ConfigMap from init.sql
 init-sql:
@@ -23,15 +18,13 @@ apply-db-job:
 	@echo "Applying PostgreSQL initialization Job..."
 	kubectl apply -f $(DB_JOB_FILE) -n $(NAMESPACE)
 
-# Optional: delete the Job after it runs
+# delete the Job after it runs
 clean-db-job:
 	@echo "Deleting init Job (optional)..."
 	kubectl delete job db-init -n $(NAMESPACE) || true
 
 # Full flow: setup DB and schema
-init-db: deploy-postgres init-sql apply-db-job
-
-# Your existing rules...
+init-db: init-sql apply-db-job
 
 install-minio:
 	@echo "Adding MinIO Helm repo..."

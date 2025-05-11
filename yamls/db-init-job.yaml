@@ -15,7 +15,7 @@ spec:
               echo "Waiting for PostgreSQL to be ready...";
               until pg_isready -h postgres -U chatapp; do sleep 2; done;
               echo "Running SQL init script...";
-              PGPASSWORD=admin psql -h postgres -U chatapp -f /sql/init.sql
+              PGPASSWORD=admin psql -h postgres -U chatapp -chatappdb -f /sql/init.sql
           env:
             - name: PGPASSWORD
               value: "admin"

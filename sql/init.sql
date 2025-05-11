@@ -1,6 +1,6 @@
 -- Create the databases
 CREATE DATABASE userdb;
-CREATE DATABASE messagedb;
+CREATE DATABASE chatdb;
 CREATE DATABASE groupdb;
 
 -- Create tables in userdb
@@ -14,11 +14,11 @@ CREATE TABLE users (
 );
 
 -- Create tables in messagedb
-\c messagedb
+\c chatdb
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  username VARCHAR(100) UNIQUE NOT NULL
-  email VARCHAR(100) UNIQUE NOT NULL,
+  username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL
 );
 
 CREATE TABLE messages (
@@ -34,8 +34,8 @@ CREATE TABLE messages (
 \c groupdb
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  username VARCHAR(100) UNIQUE NOT NULL
-  email VARCHAR(100) UNIQUE NOT NULL,
+  username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL
 );
 
 CREATE TABLE groups (
